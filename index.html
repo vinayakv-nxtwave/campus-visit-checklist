@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus Visit — GM Checklist</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --ground:#F5F1E6;
+  --surface:#FFFFFF;
+  --surface-alt:#EAE3CC;
+  --ink:#232620;
+  --ink-muted:#6B7062;
+  --line:#DCD3B4;
+  --accent:#1F6E5F;
+  --accent-ink:#F5FBF9;
+  --accent-soft:#DCEEE8;
+  --warn:#B4552F;
+  --warn-ink:#FFF7F2;
+  --warn-soft:#F3DDD0;
+  --shadow:0 1px 2px rgba(35,38,32,0.07), 0 6px 20px rgba(35,38,32,0.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ground:#11151A;
+    --surface:#1A1F1D;
+    --surface-alt:#212722;
+    --ink:#EDEBDF;
+    --ink-muted:#9BA394;
+    --line:#333B31;
+    --accent:#4FBFA8;
+    --accent-ink:#06231D;
+    --accent-soft:#16332C;
+    --warn:#E08659;
+    --warn-ink:#2A1207;
+    --warn-soft:#3A241A;
+    --shadow:0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.4);
+  }
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(640px circle at 88% -8%, var(--accent-soft) 0%, transparent 62%),
+    radial-gradient(520px circle at -8% 108%, var(--warn-soft) 0%, transparent 58%),
+    var(--ground);
+  color:var(--ink);
+  font-family:'Source Sans 3', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700; letter-spacing:0.01em; margin:0;}
+.mono, .stat-num, .stat-pct, .group-count, .tab-count, .ring-text{font-family:'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric:tabular-nums;}
+
+#app{max-width:900px;margin:0 auto;padding:20px 16px 56px;}
+
+.banner{
+  display:flex; align-items:center; gap:10px;
+  border-radius:12px; border:1px solid var(--warn); background:var(--warn-soft); color:var(--warn);
+  padding:10px 14px; font-size:0.85rem; margin-bottom:14px;
+}
+
+/* hero */
+.hero{
+  position:relative; overflow:hidden;
+  border-radius:20px; border:1px solid var(--line);
+  background:var(--surface); box-shadow:var(--shadow);
+  padding:26px 26px 22px; margin-bottom:18px;
+}
+.hero::before{
+  content:""; position:absolute; inset:0;
+  background-image: radial-gradient(var(--accent) 1.4px, transparent 1.4px);
+  background-size:15px 15px; opacity:0.14;
+  -webkit-mask-image: linear-gradient(120deg, black 0%, transparent 65%);
+  mask-image: linear-gradient(120deg, black 0%, transparent 65%);
+  pointer-events:none;
+}
+.hero-inner{position:relative; display:flex; justify-content:space-between; align-items:flex-start; gap:22px; flex-wrap:wrap;}
+.eyebrow{
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:'IBM Plex Mono',monospace; font-size:0.68rem; letter-spacing:0.09em; text-transform:uppercase;
+  color:var(--accent); background:var(--accent-soft); border-radius:999px; padding:4px 10px; margin-bottom:10px;
+}
+.hero h1{font-size:clamp(1.6rem,4vw,2.3rem); color:var(--ink);}
+.hero-sub{margin:5px 0 0; font-size:0.88rem; color:var(--ink-muted); max-width:46ch;}
+.hero-left{flex:1; min-width:240px;}
+.hero-ring-wrap{display:flex; flex-direction:column; align-items:center; gap:4px; flex-shrink:0; padding-top:4px;}
+.hero-ring-label{font-size:0.68rem; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.06em;}
+
+.ring-track{fill:none; stroke:var(--line);}
+.ring-fill{fill:none; stroke:var(--accent); stroke-linecap:round; transition:stroke-dashoffset .5s ease;}
+.ring-fill.is-warn{stroke:var(--warn);}
+.ring-text{fill:var(--ink); font-weight:600; text-anchor:middle; dominant-baseline:middle;}
+
+/* college picker */
+.college-picker{margin-top:16px; max-width:400px;}
+.college-label{display:block; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-muted); margin-bottom:6px; font-family:'IBM Plex Mono',monospace;}
+.select-wrap{position:relative;}
+.select-wrap select{
+  width:100%; appearance:none; -webkit-appearance:none; -moz-appearance:none;
+  background:var(--surface-alt); color:var(--ink); border:1.5px solid var(--line); border-radius:10px;
+  padding:11px 36px 11px 13px; font-family:'Source Sans 3',sans-serif; font-size:0.98rem; font-weight:600;
+  cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  transition:border-color .15s ease;
+}
+.select-wrap select:hover{border-color:var(--accent);}
+.select-wrap select:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+.select-caret{position:absolute; right:11px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--ink-muted);}
+
+/* tabs */
+.tabs{display:flex; gap:6px; overflow-x:auto; padding:2px 2px 0; scrollbar-width:thin; margin-bottom:0;}
+.tabs::-webkit-scrollbar{height:6px;}
+.tabs::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+.tab{
+  flex:0 0 auto; background:var(--surface-alt); border:1px solid var(--line); border-bottom:none;
+  border-radius:12px 12px 0 0; padding:10px 15px 12px; cursor:pointer;
+  font-family:'Barlow Condensed', sans-serif; color:var(--ink-muted);
+  display:flex; flex-direction:column; gap:7px; min-width:126px;
+  position:relative; top:1px; transition:transform .15s ease, background .15s ease, color .15s ease;
+}
+.tab:hover{transform:translateY(-2px); color:var(--ink);}
+.tab-top{display:flex; align-items:center; gap:7px;}
+.tab-icon{display:flex; color:var(--accent); flex-shrink:0;}
+.tab.is-warn .tab-icon{color:var(--warn);}
+.tab-label{font-size:0.95rem; font-weight:600; letter-spacing:0.01em; color:inherit; white-space:nowrap;}
+.tab-count{font-size:0.7rem; color:var(--ink-muted);}
+.tab-bar{display:block; width:100%; height:3px; background:var(--line); border-radius:2px; overflow:hidden;}
+.tab-bar-fill{display:block; height:100%; background:var(--accent); transition:width .3s ease;}
+.tab.is-warn .tab-bar-fill{background:var(--warn);}
+.tab.is-active{background:var(--surface); color:var(--ink); border-color:var(--line); transform:none;}
+.tab.is-active.is-warn{color:var(--warn);}
+.tab.is-complete:not(.is-active){background:var(--accent-soft); color:var(--accent);}
+.tab.is-complete.is-warn:not(.is-active){background:var(--warn-soft); color:var(--warn);}
+.tab:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+/* panel */
+.panel{
+  background:var(--surface); border:1px solid var(--line); border-top:none;
+  border-radius:0 0 16px 16px; padding:24px 22px 12px; box-shadow:var(--shadow);
+  animation:fadeSlide .28s ease;
+}
+.panel.is-warn{border-top:3px solid var(--warn);}
+@keyframes fadeSlide{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+.panel-head{display:flex; align-items:flex-start; gap:14px; margin-bottom:20px;}
+.panel-head-icon{
+  width:42px; height:42px; flex-shrink:0; border-radius:12px; background:var(--accent-soft); color:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+}
+.panel.is-warn .panel-head-icon{background:var(--warn-soft); color:var(--warn);}
+.panel-title{font-size:1.35rem;}
+.panel-note{font-size:0.85rem;color:var(--warn); font-style:italic; margin:4px 0 0;}
+.panel-head-ring{margin-left:auto; flex-shrink:0;}
+
+.group{margin-bottom:24px;}
+.group-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.group-badge{
+  width:24px; height:24px; border-radius:7px; background:var(--accent-soft); color:var(--accent);
+  display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace;
+  font-size:0.72rem; font-weight:600; flex-shrink:0;
+}
+.panel.is-warn .group-badge{background:var(--warn-soft); color:var(--warn);}
+.group-head h3{font-size:1.05rem;color:var(--ink); flex:1;}
+.group-count{font-size:0.78rem;color:var(--ink-muted);}
+.group-bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+.group-bar-fill{height:100%;background:var(--accent); transition:width .3s ease;}
+.panel.is-warn .group-bar-fill{background:var(--warn);}
+
+.group-items{display:flex;flex-direction:column;border-top:1px solid var(--line);}
+.item{
+  position:relative; display:flex; align-items:flex-start; gap:11px;
+  padding:9px 6px; border-bottom:1px solid var(--line); cursor:pointer;
+  font-size:0.92rem; line-height:1.45; border-radius:8px;
+}
+.item-native{position:absolute; width:1px;height:1px; padding:0;margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
+.item-box{
+  flex-shrink:0; width:20px;height:20px; margin-top:1px; color:transparent;
+  border:1.6px solid var(--line); border-radius:6px; background:var(--surface);
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s ease, border-color .15s ease, color .15s ease;
+}
+.item-check{opacity:0; transform:scale(0.5); transition:opacity .15s ease, transform .15s ease;}
+.item-native:checked + .item-box{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+.item-native:checked + .item-box .item-check{opacity:1; transform:scale(1);}
+.panel.is-warn .item-native:checked + .item-box{background:var(--warn); border-color:var(--warn); color:var(--warn-ink);}
+.item-native:focus-visible + .item-box{outline:2px solid var(--accent); outline-offset:2px;}
+.panel.is-warn .item-native:focus-visible + .item-box{outline-color:var(--warn);}
+.item-text{color:var(--ink);}
+.item.is-done{background:var(--accent-soft);}
+.panel.is-warn .item.is-done{background:var(--warn-soft);}
+.item.is-done .item-text{color:var(--ink-muted);}
+.item:hover{background:var(--surface-alt);}
+
+.panel-footer{display:flex;justify-content:flex-end;padding:14px 4px 8px;}
+.link-btn{background:none;border:none;color:var(--ink-muted);font-size:0.78rem;text-decoration:underline; cursor:pointer; padding:4px;}
+.link-btn:hover{color:var(--ink);}
+.link-btn:focus-visible{outline:2px solid var(--accent);}
+
+.app-footer{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:16px 6px 0;}
+.app-footer-note{font-size:0.72rem;color:var(--ink-muted);}
+
+@media (max-width:560px){
+  .hero-inner{flex-direction:column; align-items:flex-start;}
+  .hero-ring-wrap{align-self:flex-end;}
+  .college-picker{max-width:100%; width:100%;}
+  .panel-head-ring{display:none;}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important; animation:none !important;}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Firebase (only used if you fill in FIREBASE_CONFIG below) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================================
+     SETUP: paste your Firebase web config here (from Firebase console ->
+     Project settings -> General -> Your apps -> Web app -> SDK setup).
+     Until you replace this, the checklist runs in local-only mode (each
+     browser keeps its own copy, nothing syncs between people).
+     ========================================================================= */
+  var FIREBASE_CONFIG = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  var ICONS = {
+    "pre-visit": '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"></rect><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"></path><path d="M9 12.6l2 2 4-4.6"></path></svg>',
+    "travel": '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11A6.5 6.5 0 0 1 18.5 10c0 4.8-6.5 11-6.5 11z"></path><circle cx="12" cy="10" r="2.3"></circle></svg>',
+    "t1-day": '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"></rect><path d="M3.5 9.5h17"></path><path d="M8 3v3M16 3v3"></path><rect x="13.3" y="11.8" width="4" height="4" rx="0.8" fill="currentColor" stroke="none"></rect></svg>',
+    "during-visit": '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h3l10-4v14l-10-4H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z"></path><path d="M8 15l1 4h2l-1-4"></path></svg>',
+    "post-visit": '<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><rect x="4" y="11" width="3.2" height="9" rx="1" fill="currentColor"></rect><rect x="10.4" y="6" width="3.2" height="14" rx="1" fill="currentColor"></rect><rect x="16.8" y="14" width="3.2" height="6" rx="1" fill="currentColor"></rect></svg>',
+    "contingency": '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l9.5 16.5H2.5z"></path><path d="M12 9.5V14"></path><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"></circle></svg>'
+  };
+
+  var COLLEGES = [
+    "BIT Mesra", "BITS Goa", "BITS Hyderabad", "BITS Pilani",
+    "IIIT Agartala", "IIIT Allahabad", "IIIT Bangalore", "IIIT Bhagalpur", "IIIT Bhopal", "IIIT Bhubaneswar",
+    "IIIT Dharwad", "IIIT Guwahati", "IIIT Hyderabad", "IIIT Kalyani", "IIIT Kota", "IIIT Kottayam",
+    "IIIT Lucknow", "IIIT Manipur", "IIIT Nagpur", "IIIT Naya Raipur", "IIIT Pune", "IIIT Raichur",
+    "IIIT Ranchi", "IIIT Sonepat", "IIIT Sri City (Chittoor)", "IIIT Surat", "IIIT Tiruchirappalli",
+    "IIIT Una", "IIIT Vadodara", "IIIT Vadodara – International Campus Diu",
+    "IIITDM Jabalpur", "IIITDM Kancheepuram", "IIITDM Kurnool",
+    "IIT (BHU) Varanasi", "IIT (ISM) Dhanbad", "IIT Bhilai", "IIT Bhubaneswar", "IIT Bombay", "IIT Delhi",
+    "IIT Dharwad", "IIT Gandhinagar", "IIT Goa", "IIT Guwahati", "IIT Hyderabad", "IIT Indore", "IIT Jammu",
+    "IIT Jodhpur", "IIT Kanpur", "IIT Kharagpur", "IIT Madras", "IIT Mandi", "IIT Palakkad", "IIT Patna",
+    "IIT Roorkee", "IIT Ropar", "IIT Tirupati",
+    "NIT Agartala", "NIT Allahabad", "NIT Andhra Pradesh", "NIT Arunachal Pradesh", "NIT Bhopal (MANIT)",
+    "NIT Calicut", "NIT Delhi", "NIT Durgapur", "NIT Goa", "NIT Hamirpur", "NIT Jaipur (MNIT)",
+    "NIT Jalandhar (Dr. B R Ambedkar NIT)", "NIT Jamshedpur", "NIT Kurukshetra", "NIT Manipur",
+    "NIT Meghalaya", "NIT Mizoram", "NIT Nagaland", "NIT Nagpur (VNIT)", "NIT Patna", "NIT Puducherry",
+    "NIT Raipur", "NIT Rourkela", "NIT Sikkim", "NIT Silchar", "NIT Srinagar", "NIT Surat (SVNIT)",
+    "NIT Surathkal (NITK)", "NIT Tadepalligudem", "NIT Tiruchirappalli (NIT Trichy)", "NIT Uttarakhand",
+    "NIT Warangal"
+  ];
+
+  var SECTIONS = [
+    {
+      id: "pre-visit",
+      short: "Pre-Visit",
+      title: "1. Pre-Visit Checklist",
+      groups: [
+        { heading: "A. Campus & Session Confirmation", items: [
+          "Finalise visit date and session time with the college.",
+          "Confirm batch-wise session commitments — 1st / 2nd / 3rd / 4th year.",
+          "Confirm the number of sessions and expected student participation.",
+          "Finalise the venue and auditorium.",
+          "Collect hall photos/videos to assess seating, stage, projector and overall setup.",
+          "Confirm venue capacity vs expected attendance.",
+          "Get written/email confirmation of the campus visit.",
+          "Confirm TPO/CDC/Faculty/Student POC and their availability on the visit day.",
+          "Confirm session timings, reporting time and check-in process.",
+          "Understand how much time the college entry/check-in process takes."
+        ]},
+        { heading: "B. Academic & Campus Schedule Check", items: [
+          "Check for exams, fests, holidays or other major campus events.",
+          "Check if any event is scheduled immediately before/after our session.",
+          "Ensure there is no clash with major student activities.",
+          "Confirm whether students will be free to attend the complete session.",
+          "Identify the best time/channel for last-minute student mobilisation."
+        ]},
+        { heading: "C. Student Mobilisation & Registration", items: [
+          "Launch the registration form well before the visit.",
+          "Promote through posters.",
+          "Promote through college email.",
+          "Promote through WhatsApp groups.",
+          "Promote through student coordinators/PoRs.",
+          "Promote through college social media.",
+          "Promote through class/community groups.",
+          "Test the registration form on desktop.",
+          "Test the registration form on mobile.",
+          "Test the registration form in incognito mode.",
+          "Verify that registrations are being captured correctly.",
+          "Track registrations → attendance → activation.",
+          "Check current signed-up and activated users campus-wise/YOG-wise.",
+          "Freeze a realistic registration and activation target.",
+          "Identify active Launchpad users on campus.",
+          "Shortlist students for feedback.",
+          "Shortlist students for testimonials.",
+          "Shortlist students for video bytes.",
+          "Shortlist students for student interactions.",
+          "Shortlist students for lunch/dinner meet."
+        ]},
+        { heading: "D. Student & PoR Relationship Building", items: [
+          "Identify important PoRs/student leaders across batches.",
+          "Connect with key PoRs before the visit.",
+          "Build relationships beyond the primary POC.",
+          "Identify aspiring content creators on campus.",
+          "Identify students who can help with on-ground mobilisation.",
+          "Plan a lunch/dinner interaction with active Launchpad students."
+        ]},
+        { heading: "E. Content & Branding", items: [
+          "Finalise the content requirements with the branding team.",
+          "Plan to capture campus entry footage.",
+          "Plan to capture student interactions.",
+          "Plan to capture session footage.",
+          "Plan to capture audience shots.",
+          "Plan to capture Launchpad registrations.",
+          "Plan to capture student testimonials.",
+          "Plan to capture PoR interactions.",
+          "Identify students for testimonial/video bytes.",
+          "Prepare Instagram QR.",
+          "Prepare registration QR/standee.",
+          "Arrange posters and branding material.",
+          "Order required goodies/stickers.",
+          "Plan any placement/achievement celebration, if applicable."
+        ]},
+        { heading: "F. Session Preparation", items: [
+          "Finalise speaker(s).",
+          "Share session flow and requirements with the speaker.",
+          "Confirm projector.",
+          "Confirm screen.",
+          "Confirm mic.",
+          "Confirm speakers (audio).",
+          "Confirm laptop connection.",
+          "Confirm clicker.",
+          "Confirm internet.",
+          "Confirm power backup.",
+          "Confirm whether students need to bring laptops.",
+          "Confirm internet availability for any mini contest/interactive activity.",
+          "Prepare the session deck, links, QR codes and backup files.",
+          "Keep an offline copy of all critical content."
+        ]}
+      ]
+    },
+    {
+      id: "travel",
+      short: "Travel & Logistics",
+      title: "2. Travel & Logistics Checklist",
+      groups: [
+        { heading: "A. Transport", items: [
+          "Decide who will travel to the campus.",
+          "Assign one GM to reach T-1 day.",
+          "Finalise travel route based on airport/railway station/bus stand.",
+          "Finalise travel route based on distance to campus.",
+          "Finalise travel route based on campus entry restrictions.",
+          "Finalise travel route based on local transport availability.",
+          "Book to-and-fro tickets.",
+          "Share travel details with the team.",
+          "Keep buffer time for delays.",
+          "Understand the best local transport option recommended by the POC."
+        ]},
+        { heading: "B. Accommodation", items: [
+          "Check availability of campus guest house/accommodation.",
+          "Confirm check-in/check-out timings.",
+          "Share guest details with the campus POC.",
+          "Keep a backup accommodation option if required.",
+          "Ensure the T-1 GM has accommodation confirmed before arrival."
+        ]},
+        { heading: "C. Expense Management", items: [
+          "Keep petty cash ready.",
+          "Maintain the expense tracker.",
+          "Keep receipts/proofs for all expenses.",
+          "If a receipt is unavailable, record the expense immediately and create a cash memo later."
+        ]}
+      ]
+    },
+    {
+      id: "t1-day",
+      short: "T-1 Day",
+      title: "3. T-1 Day — GM Action Items",
+      groups: [
+        { heading: "Campus Readiness", items: [
+          "Reach campus and coordinate with the POC.",
+          "Check accommodation before the rest of the team arrives.",
+          "Visit the venue personally.",
+          "Conduct a complete dry run.",
+          "Test projector.",
+          "Test mic.",
+          "Test audio.",
+          "Test laptop.",
+          "Test internet.",
+          "Test power.",
+          "Test QR codes.",
+          "Test registration flow.",
+          "Check internet speed and stability.",
+          "Confirm seating arrangement.",
+          "Confirm stage/backdrop/branding placement.",
+          "Confirm entry and registration/check-in process."
+        ]},
+        { heading: "Student Communication", items: [
+          "Ensure session communication reaches all relevant batches.",
+          "Push online communication through WhatsApp/email.",
+          "Coordinate offline communication through PoRs.",
+          "Put up posters at high-footfall locations.",
+          "Confirm that student coordinators are actively mobilising students.",
+          "Share a final reminder on the night before the session."
+        ]},
+        { heading: "Final Coordination", items: [
+          "Meet the primary POC.",
+          "Reconfirm session timing and expected attendance.",
+          "Reconfirm speaker arrival and session flow.",
+          "Reconfirm venue availability.",
+          "Share emergency contact numbers with the team.",
+          "Brief the other GMs on their responsibilities."
+        ]}
+      ]
+    },
+    {
+      id: "during-visit",
+      short: "During Visit",
+      title: "4. During Campus Visit",
+      groups: [
+        { heading: "A. Before the Session", items: [
+          "Reach venue at least 60–90 minutes before the session.",
+          "Set up branding/standees/posters.",
+          "Keep registration QR codes visible.",
+          "Ensure student check-in is smooth.",
+          "Track actual attendance.",
+          "Identify active/interested students.",
+          "Capture 4–5 good campus photographs for branding.",
+          "Capture 2–3 short campus videos/reels.",
+          "Get campus gate/landmark shots."
+        ]},
+        { heading: "B. Student Engagement", items: [
+          "Meet important PoRs and strengthen relationships.",
+          "Interact with active Launchpad users.",
+          "Speak to students from different years/branches.",
+          "Identify students interested in Launchpad.",
+          "Identify students interested in content creation.",
+          "Identify students interested in campus leadership.",
+          "Identify students interested in future collaborations.",
+          "Conduct student feedback conversations.",
+          "Distribute goodies while interacting with students.",
+          "Use Instagram/registration QR wherever relevant."
+        ]},
+        { heading: "C. Session Execution", items: [
+          "Ensure the speaker is ready before the session starts.",
+          "Start and end on time.",
+          "Monitor audience engagement.",
+          "Capture quality photos/videos during the session.",
+          "Ensure registration/activation CTA is clearly communicated.",
+          "Push students to scan the QR and complete the required action.",
+          "Conduct the mini contest/interactive activity if planned.",
+          "Track registrations/activations during the session."
+        ]},
+        { heading: "D. Content & Testimonials", items: [
+          "Capture student testimonials.",
+          "Record short video bytes from selected students.",
+          "Capture interactions with PoRs.",
+          "Capture speaker + student engagement.",
+          "Capture branded campus visuals.",
+          "Get consent wherever required before recording students.",
+          "Share the best raw content with the branding team."
+        ]},
+        { heading: "E. Student Meet", items: [
+          "Organise lunch/dinner with selected active Launchpad students.",
+          "Gather qualitative feedback.",
+          "Understand what students like.",
+          "Understand what students need.",
+          "Understand why they activated/didn't activate.",
+          "Understand what drives engagement.",
+          "Understand what other platforms/resources they use.",
+          "Identify potential campus ambassadors/leaders.",
+          "Capture strong student stories/testimonials."
+        ]},
+        { heading: "F. College Relationship", items: [
+          "Meet the TPO/CDC/Faculty/Student Council wherever possible.",
+          "Thank them for the support.",
+          "Discuss future collaboration opportunities.",
+          "Understand upcoming campus requirements/events.",
+          "Explore opportunities for mock OAs.",
+          "Explore opportunities for future sessions.",
+          "Explore opportunities for student communities.",
+          "Explore opportunities for workshops.",
+          "Explore opportunities for continued Launchpad engagement."
+        ]}
+      ]
+    },
+    {
+      id: "post-visit",
+      short: "Post-Visit",
+      title: "5. Post-Visit Checklist",
+      groups: [
+        { heading: "A. Same-Day Closure", items: [
+          "Update expense tracker.",
+          "Upload all receipts/proofs.",
+          "Record total registrations.",
+          "Record attendance.",
+          "Record activations.",
+          "Record batch-wise participation.",
+          "Note important student feedback.",
+          "Update campus CRM/status tracker.",
+          "Organise photos/videos and share with the branding team."
+        ]},
+        { heading: "B. Student Follow-up — T+1 to T+3", items: [
+          "Send thank-you/follow-up communication to students.",
+          "Share relevant Launchpad links/resources.",
+          "Follow up with students who registered but haven't activated.",
+          "Follow up with students who attended but didn't register.",
+          "Connect with high-intent students.",
+          "Identify potential Campus Leads/Ambassadors.",
+          "Continue engagement through the campus community."
+        ]},
+        { heading: "C. College/POC Follow-up", items: [
+          "Send a thank-you message/mail to the POC.",
+          "Share session highlights/photos if appropriate.",
+          "Share registration/participation numbers.",
+          "Discuss the next activity.",
+          "Explore Mock OA / future session opportunities.",
+          "Maintain relationship with key PoRs and faculty stakeholders."
+        ]},
+        { heading: "D. Internal Reporting — Campus Visit Report", items: [
+          "Reach — total registrations.",
+          "Reach — total attendance.",
+          "Reach — batch-wise participation.",
+          "Conversion — sign-ups.",
+          "Conversion — activations.",
+          "Conversion — registration → activation %.",
+          "Engagement — student feedback.",
+          "Engagement — number of active users engaged.",
+          "Engagement — potential campus ambassadors identified.",
+          "Content — photos captured.",
+          "Content — videos/testimonials captured.",
+          "Content — social media opportunities.",
+          "Relationship — POCs met.",
+          "Relationship — PoRs connected.",
+          "Relationship — future opportunities identified.",
+          "Learnings — what worked.",
+          "Learnings — what didn't work.",
+          "Learnings — best student mobilisation channel.",
+          "Learnings — venue/session challenges.",
+          "Learnings — recommendations for the next campus."
+        ]}
+      ]
+    },
+    {
+      id: "contingency",
+      short: "Contingency",
+      title: "6. Contingency Plan — If Students Don't Show Up",
+      note: "Don't wait until the session starts. Have Plan B and Plan C ready before the visit.",
+      groups: [
+        { heading: "If registrations are low", items: [
+          "Identify the highest-engagement student channel on campus.",
+          "Ask PoRs to push a last-minute WhatsApp message.",
+          "Send direct messages to registered/high-intent students.",
+          "Use class/group representatives for mobilisation.",
+          "Put volunteers at high-footfall locations.",
+          "Push QR-based registration offline."
+        ]},
+        { heading: "If attendance is low at the venue", items: [
+          "Activate student coordinators immediately.",
+          "Shift communication from generic groups to high-response groups.",
+          "Ask PoRs to make a direct announcement.",
+          "Personally call/message high-intent students.",
+          "Consider moving to a smaller venue if operationally feasible.",
+          "Continue registration/activation drive outside the hall."
+        ]},
+        { heading: "If the session gets disrupted", items: [
+          "Keep a backup venue option.",
+          "Keep offline copies of all session material.",
+          "Keep a backup laptop/hotspot where possible.",
+          "Have a shorter 30–40 minute version of the session ready.",
+          "Have the registration/activation flow ready even without projector/internet."
+        ]}
+      ]
+    }
+  ];
+
+  SECTIONS.forEach(function(sec){
+    sec.groups.forEach(function(g, gi){
+      var m = g.heading.match(/^([A-Z])\.\s*(.+)$/);
+      g.badge = m ? m[1] : String(gi + 1);
+      g.shortHeading = m ? m[2] : g.heading;
+      g.items = g.items.map(function(text, ii){
+        return { id: sec.id + "-" + gi + "-" + ii, text: text };
+      });
+    });
+  });
+
+  function esc(s){
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  function tallyItems(items, state){
+    var checked = 0;
+    items.forEach(function(it){ if (state[it.id]) checked++; });
+    return { checked: checked, total: items.length };
+  }
+
+  function tallySection(sec, state){
+    var checked = 0, total = 0;
+    sec.groups.forEach(function(g){
+      var t = tallyItems(g.items, state);
+      checked += t.checked; total += t.total;
+    });
+    return { checked: checked, total: total };
+  }
+
+  function tallyAll(state){
+    return SECTIONS.reduce(function(a, sec){
+      var t = tallySection(sec, state);
+      return { checked: a.checked + t.checked, total: a.total + t.total };
+    }, { checked: 0, total: 0 });
+  }
+
+  function ringSvg(pct, size, warn){
+    var r = (size - 8) / 2;
+    var c = 2 * Math.PI * r;
+    var off = c * (1 - pct / 100);
+    var cx = size / 2, cy = size / 2;
+    return '<svg class="ring" viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '">' +
+      '<g transform="rotate(-90 ' + cx + ' ' + cy + ')">' +
+      '<circle class="ring-track" cx="' + cx + '" cy="' + cy + '" r="' + r + '" stroke-width="6"></circle>' +
+      '<circle class="ring-fill' + (warn ? ' is-warn' : '') + '" cx="' + cx + '" cy="' + cy + '" r="' + r + '" stroke-width="6" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '"></circle>' +
+      '</g>' +
+      '<text class="ring-text" x="' + cx + '" y="' + (cy + 1) + '" font-size="' + Math.round(size * 0.24) + '">' + pct + '%</text>' +
+      '</svg>';
+  }
+
+  function renderPanel(sec, collegeState){
+    var secTally = tallySection(sec, collegeState);
+    var secPct = secTally.total ? Math.round(secTally.checked / secTally.total * 100) : 0;
+    var isWarn = sec.id === "contingency";
+    var groupsHtml = sec.groups.map(function(g){
+      var t = tallyItems(g.items, collegeState);
+      var gpct = t.total ? Math.round(t.checked / t.total * 100) : 0;
+      var itemsHtml = g.items.map(function(it){
+        var checked = !!collegeState[it.id];
+        return '<label class="item' + (checked ? ' is-done' : '') + '">' +
+          '<input type="checkbox" class="item-native" data-item="' + it.id + '"' + (checked ? ' checked' : '') + '>' +
+          '<span class="item-box"><svg class="item-check" viewBox="0 0 16 16" width="12" height="12"><polyline points="3,8.5 6.5,12 13,4" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"></polyline></svg></span>' +
+          '<span class="item-text">' + esc(it.text) + '</span>' +
+          '</label>';
+      }).join('');
+      return '<section class="group">' +
+        '<header class="group-head"><span class="group-badge">' + esc(g.badge) + '</span><h3>' + esc(g.shortHeading) + '</h3><span class="group-count">' + t.checked + '/' + t.total + '</span></header>' +
+        '<div class="group-bar"><div class="group-bar-fill" style="width:' + gpct + '%"></div></div>' +
+        '<div class="group-items">' + itemsHtml + '</div>' +
+        '</section>';
+    }).join('');
+    return '<div class="panel-inner">' +
+      '<div class="panel-head">' +
+      '<div class="panel-head-icon">' + ICONS[sec.id] + '</div>' +
+      '<div><h2 class="panel-title">' + esc(sec.title) + '</h2>' +
+      (sec.note ? '<p class="panel-note">' + esc(sec.note) + '</p>' : '') +
+      '</div>' +
+      '<div class="panel-head-ring">' + ringSvg(secPct, 52, isWarn) + '</div>' +
+      '</div>' +
+      groupsHtml +
+      '<div class="panel-footer"><button class="link-btn" data-reset-tab="' + sec.id + '">Reset this tab</button></div>' +
+      '</div>';
+  }
+
+  function renderApp(state, currentCollege, activeTab, mode){
+    var collegeState = state[currentCollege] || {};
+    var totals = SECTIONS.map(function(sec){ return tallySection(sec, collegeState); });
+    var overall = tallyAll(collegeState);
+    var pct = overall.total ? Math.round(overall.checked / overall.total * 100) : 0;
+
+    var collegeOptionsHtml = COLLEGES.map(function(name){
+      var t = tallyAll(state[name] || {});
+      var suffix = t.checked ? " — " + t.checked + "/" + t.total : "";
+      var selected = name === currentCollege ? " selected" : "";
+      return '<option value="' + esc(name) + '"' + selected + '>' + esc(name) + suffix + '</option>';
+    }).join('');
+
+    var tabsHtml = SECTIONS.map(function(sec, i){
+      var t = totals[i];
+      var tpct = t.total ? Math.round(t.checked / t.total * 100) : 0;
+      var isActive = sec.id === activeTab;
+      var isComplete = t.total > 0 && t.checked === t.total;
+      var warnClass = sec.id === "contingency" ? " is-warn" : "";
+      return '<button class="tab' + (isActive ? ' is-active' : '') + (isComplete ? ' is-complete' : '') + warnClass + '" data-tab="' + sec.id + '" role="tab" aria-selected="' + isActive + '">' +
+        '<span class="tab-top"><span class="tab-icon">' + ICONS[sec.id] + '</span><span class="tab-label">' + esc(sec.short) + '</span></span>' +
+        '<span class="tab-count">' + t.checked + '/' + t.total + '</span>' +
+        '<span class="tab-bar"><span class="tab-bar-fill" style="width:' + tpct + '%"></span></span>' +
+        '</button>';
+    }).join('');
+
+    var activeSec = SECTIONS.filter(function(s){ return s.id === activeTab; })[0] || SECTIONS[0];
+    var panelHtml = renderPanel(activeSec, collegeState);
+    var footNote = mode === "shared"
+      ? "Progress is saved to the shared database and syncs for everyone viewing this checklist."
+      : "Shared sync isn't set up yet — progress is saved only in this browser. See the comment at the top of index.html.";
+
+    var banner = mode === "shared" ? "" :
+      '<div class="banner">Running in local-only mode — checkbox progress will not be shared with other people until you add a Firebase config (see the top of index.html).</div>';
+
+    return banner + '<div class="hero"><div class="hero-inner">' +
+        '<div class="hero-left"><span class="eyebrow">Field checklist</span>' +
+        '<h1>Campus Visit — GM Checklist</h1>' +
+        '<p class="hero-sub">Every campus gets its own checklist. Pick a campus below, then work through the tabs.</p>' +
+        '<div class="college-picker"><label class="college-label" for="college-select">Campus</label>' +
+        '<div class="select-wrap"><select id="college-select">' + collegeOptionsHtml + '</select>' +
+        '<svg class="select-caret" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"></polyline></svg></div>' +
+        '</div></div>' +
+        '<div class="hero-ring-wrap">' + ringSvg(pct, 78, false) + '<span class="hero-ring-label mono">' + overall.checked + '/' + overall.total + '</span></div>' +
+      '</div></div>' +
+      '<nav class="tabs" role="tablist">' + tabsHtml + '</nav>' +
+      '<main class="panel' + (activeSec.id === "contingency" ? ' is-warn' : '') + '">' + panelHtml + '</main>' +
+      '<footer class="app-footer"><button class="link-btn" data-reset-all="1">Reset checklist for this campus</button><span class="app-footer-note">' + footNote + '</span></footer>';
+  }
+
+  /* ---------------------------------------------------------------------
+     App state + wiring
+     --------------------------------------------------------------------- */
+  var STATE = {};
+  var currentCollege = COLLEGES[0];
+  try {
+    var savedCollege = localStorage.getItem("cvc-college");
+    if (savedCollege && COLLEGES.indexOf(savedCollege) !== -1) currentCollege = savedCollege;
+  } catch (e) {}
+
+  var activeTab = SECTIONS[0].id;
+  var confirmState = {};
+  var dbRef = null;
+  var mode = "local"; // "local" or "shared"
+
+  var app = document.getElementById("app");
+
+  function paint(){
+    app.innerHTML = renderApp(STATE, currentCollege, activeTab, mode);
+  }
+
+  function loadLocal(){
+    try {
+      var raw = localStorage.getItem("cvc-state");
+      if (raw) STATE = JSON.parse(raw);
+    } catch (e) {}
+  }
+  function saveLocal(){
+    try { localStorage.setItem("cvc-state", JSON.stringify(STATE)); } catch (e) {}
+  }
+
+  function isConfigured(cfg){
+    return cfg && typeof cfg.apiKey === "string" && cfg.apiKey.indexOf("YOUR_") !== 0;
+  }
+
+  function init(){
+    if (isConfigured(FIREBASE_CONFIG) && window.firebase) {
+      try {
+        firebase.initializeApp(FIREBASE_CONFIG);
+        dbRef = firebase.database().ref("checklist");
+        dbRef.on("value", function(snap){
+          STATE = snap.val() || {};
+          mode = "shared";
+          paint();
+        }, function(){
+          mode = "local";
+          loadLocal();
+          paint();
+        });
+      } catch (e) {
+        mode = "local";
+        loadLocal();
+        paint();
+      }
+    } else {
+      mode = "local";
+      loadLocal();
+      paint();
+    }
+    paint();
+  }
+  init();
+
+  app.addEventListener("change", function(e){
+    var sel = e.target.closest("#college-select");
+    if (sel) {
+      currentCollege = sel.value;
+      try { localStorage.setItem("cvc-college", currentCollege); } catch (e) {}
+      confirmState = {};
+      paint();
+      return;
+    }
+    var cb = e.target.closest("input[type=checkbox][data-item]");
+    if (!cb) return;
+    var id = cb.getAttribute("data-item");
+    STATE[currentCollege] = STATE[currentCollege] || {};
+    if (cb.checked) STATE[currentCollege][id] = true; else delete STATE[currentCollege][id];
+    paint();
+    if (dbRef) {
+      var path = dbRef.child(currentCollege).child(id);
+      if (cb.checked) path.set(true); else path.remove();
+    } else {
+      saveLocal();
+    }
+  });
+
+  app.addEventListener("click", function(e){
+    var tabBtn = e.target.closest("[data-tab]");
+    if (tabBtn) { activeTab = tabBtn.getAttribute("data-tab"); confirmState = {}; paint(); return; }
+
+    var resetTabBtn = e.target.closest("[data-reset-tab]");
+    if (resetTabBtn) { handleResetTab(resetTabBtn); return; }
+
+    var resetAllBtn = e.target.closest("[data-reset-all]");
+    if (resetAllBtn) { handleResetAll(resetAllBtn); return; }
+  });
+
+  function handleResetTab(btn){
+    var tabId = btn.getAttribute("data-reset-tab");
+    if (confirmState.tab === tabId) {
+      var sec = SECTIONS.filter(function(s){ return s.id === tabId; })[0];
+      var updates = {};
+      STATE[currentCollege] = STATE[currentCollege] || {};
+      sec.groups.forEach(function(g){
+        g.items.forEach(function(it){
+          delete STATE[currentCollege][it.id];
+          updates[it.id] = null;
+        });
+      });
+      confirmState = {};
+      paint();
+      if (dbRef) dbRef.child(currentCollege).update(updates); else saveLocal();
+    } else {
+      confirmState = { tab: tabId };
+      btn.textContent = "Click again to confirm reset";
+      setTimeout(function(){ if (confirmState.tab === tabId) { confirmState = {}; paint(); } }, 3000);
+    }
+  }
+
+  function handleResetAll(btn){
+    if (confirmState.all) {
+      STATE[currentCollege] = {};
+      confirmState = {};
+      paint();
+      if (dbRef) dbRef.child(currentCollege).remove(); else saveLocal();
+    } else {
+      confirmState = { all: true };
+      btn.textContent = "Click again to confirm reset";
+      setTimeout(function(){ if (confirmState.all) { confirmState = {}; paint(); } }, 3000);
+    }
+  }
+})();
+</script>
+</body>
+</html>
