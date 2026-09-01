@@ -642,7 +642,7 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
       '</svg>';
   }
 
-  function renderPanel(sec, collegeState){
+  function renderPanel(sec, collegeState, confirmState){
     var secTally = tallySection(sec, collegeState);
     var secPct = secTally.total ? Math.round(secTally.checked / secTally.total * 100) : 0;
     var isWarn = sec.id === "contingency";
@@ -672,11 +672,11 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
       '<div class="panel-head-ring">' + ringSvg(secPct, 52, isWarn) + '</div>' +
       '</div>' +
       groupsHtml +
-      '<div class="panel-footer"><button class="link-btn" data-reset-tab="' + sec.id + '">Reset this tab</button></div>' +
+      '<div class="panel-footer"><button class="link-btn" data-reset-tab="' + sec.id + '">' + (confirmState.tab === sec.id ? "Click again to confirm reset" : "Reset this tab") + '</button></div>' +
       '</div>';
   }
 
-  function renderApp(state, currentCollege, activeTab, mode){
+  function renderApp(state, currentCollege, activeTab, mode, confirmState){
     var collegeState = state[currentCollege] || {};
     var totals = SECTIONS.map(function(sec){ return tallySection(sec, collegeState); });
     var overall = tallyAll(collegeState);
@@ -703,7 +703,7 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
     }).join('');
 
     var activeSec = SECTIONS.filter(function(s){ return s.id === activeTab; })[0] || SECTIONS[0];
-    var panelHtml = renderPanel(activeSec, collegeState);
+    var panelHtml = renderPanel(activeSec, collegeState, confirmState);
     var footNote = mode === "shared"
       ? "Progress is saved to the shared database and syncs for everyone viewing this checklist."
       : "Shared sync isn't set up yet — progress is saved only in this browser. See the comment at the top of index.html.";
@@ -723,7 +723,7 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
       '</div></div>' +
       '<nav class="tabs" role="tablist">' + tabsHtml + '</nav>' +
       '<main class="panel' + (activeSec.id === "contingency" ? ' is-warn' : '') + '">' + panelHtml + '</main>' +
-      '<footer class="app-footer"><button class="link-btn" data-reset-all="1">Reset checklist for this campus</button><span class="app-footer-note">' + footNote + '</span></footer>';
+      '<footer class="app-footer"><button class="link-btn" data-reset-all="1">' + (confirmState.all ? "Click again to confirm reset" : "Reset checklist for this campus") + '</button><span class="app-footer-note">' + footNote + '</span></footer>';
   }
 
   /* ---------------------------------------------------------------------
@@ -744,7 +744,7 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
   var app = document.getElementById("app");
 
   function paint(){
-    app.innerHTML = renderApp(STATE, currentCollege, activeTab, mode);
+    app.innerHTML = renderApp(STATE, currentCollege, activeTab, mode, confirmState);
   }
 
   function loadLocal(){
@@ -840,7 +840,7 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
       if (dbRef) dbRef.child(currentCollege).update(updates); else saveLocal();
     } else {
       confirmState = { tab: tabId };
-      btn.textContent = "Click again to confirm reset";
+      paint();
       setTimeout(function(){ if (confirmState.tab === tabId) { confirmState = {}; paint(); } }, 3000);
     }
   }
@@ -853,7 +853,7 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
       if (dbRef) dbRef.child(currentCollege).remove(); else saveLocal();
     } else {
       confirmState = { all: true };
-      btn.textContent = "Click again to confirm reset";
+      paint();
       setTimeout(function(){ if (confirmState.all) { confirmState = {}; paint(); } }, 3000);
     }
   }
