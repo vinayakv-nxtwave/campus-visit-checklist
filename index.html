@@ -93,17 +93,31 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
 /* college picker */
 .college-picker{margin-top:16px; max-width:400px;}
 .college-label{display:block; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-muted); margin-bottom:6px; font-family:'IBM Plex Mono',monospace;}
-.select-wrap{position:relative;}
-.select-wrap select{
-  width:100%; appearance:none; -webkit-appearance:none; -moz-appearance:none;
-  background:var(--surface-alt); color:var(--ink); border:1.5px solid var(--line); border-radius:10px;
+.combo-wrap{position:relative;}
+.combo-input{
+  width:100%; background:var(--surface-alt); color:var(--ink); border:1.5px solid var(--line); border-radius:10px;
   padding:11px 36px 11px 13px; font-family:'Source Sans 3',sans-serif; font-size:0.98rem; font-weight:600;
-  cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  transition:border-color .15s ease;
+  cursor:text; transition:border-color .15s ease;
 }
-.select-wrap select:hover{border-color:var(--accent);}
-.select-wrap select:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
-.select-caret{position:absolute; right:11px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--ink-muted);}
+.combo-input::placeholder{color:var(--ink-muted); font-weight:600;}
+.combo-input:hover{border-color:var(--accent);}
+.combo-input:focus{outline:none; border-color:var(--accent);}
+.select-caret{position:absolute; right:11px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--ink-muted); transition:transform .15s ease;}
+.combo-wrap.is-open .select-caret{transform:translateY(-50%) rotate(180deg);}
+.combo-listbox{
+  position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:20;
+  background:var(--surface); border:1.5px solid var(--line); border-radius:12px; box-shadow:var(--shadow);
+  max-height:280px; overflow-y:auto; padding:6px;
+}
+.combo-option{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:9px 10px; border-radius:8px; font-size:0.92rem; cursor:pointer; color:var(--ink);
+}
+.combo-option-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;}
+.combo-option-count{flex-shrink:0; font-size:0.72rem; color:var(--ink-muted);}
+.combo-option.is-active{background:var(--surface-alt);}
+.combo-option.is-selected .combo-option-name{color:var(--accent); font-weight:700;}
+.combo-empty{padding:10px; font-size:0.85rem; color:var(--ink-muted); text-align:center;}
 
 /* tabs */
 .tabs{display:flex; gap:6px; overflow-x:auto; padding:2px 2px 0; scrollbar-width:thin; margin-bottom:0;}
@@ -395,18 +409,26 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
       '</div>';
   }
 
-  function renderApp(state, currentCollege, activeTab, mode, confirmState){
+  function renderApp(state, currentCollege, activeTab, mode, confirmState, collegeUi){
     var collegeState = state[currentCollege] || {};
     var totals = SECTIONS.map(function(sec){ return tallySection(sec, collegeState); });
     var overall = tallyAll(collegeState);
     var pct = overall.total ? Math.round(overall.checked / overall.total * 100) : 0;
 
-    var collegeOptionsHtml = COLLEGES.map(function(name){
-      var t = tallyAll(state[name] || {});
-      var suffix = t.checked ? " — " + t.checked + "/" + t.total : "";
-      var selected = name === currentCollege ? " selected" : "";
-      return '<option value="' + esc(name) + '"' + selected + '>' + esc(name) + suffix + '</option>';
-    }).join('');
+    var query = collegeUi.query.toLowerCase();
+    var filtered = COLLEGES.filter(function(name){ return name.toLowerCase().indexOf(query) !== -1; });
+    var activeIdx = Math.min(collegeUi.activeIndex, Math.max(filtered.length - 1, 0));
+    var listboxHtml = filtered.length
+      ? filtered.map(function(name, idx){
+          var t = tallyAll(state[name] || {});
+          var suffix = t.checked ? t.checked + "/" + t.total : "";
+          var cls = "combo-option" + (idx === activeIdx ? " is-active" : "") + (name === currentCollege ? " is-selected" : "");
+          return '<div class="' + cls + '" data-college="' + esc(name) + '" role="option" id="combo-opt-' + idx + '">' +
+            '<span class="combo-option-name">' + esc(name) + '</span>' +
+            (suffix ? '<span class="combo-option-count mono">' + esc(suffix) + '</span>' : '') +
+            '</div>';
+        }).join('')
+      : '<div class="combo-empty">No campuses match &quot;' + esc(collegeUi.query) + '&quot;</div>';
 
     var tabsHtml = SECTIONS.map(function(sec, i){
       var t = totals[i];
@@ -433,9 +455,12 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
         '<div class="hero-left"><span class="eyebrow">Master checklist</span>' +
         '<h1>Campus Visit – Master Checklist</h1>' +
         '<p class="hero-sub">Every campus gets its own checklist. Pick a campus below, then work through the tabs.</p>' +
-        '<div class="college-picker"><label class="college-label" for="college-select">Campus</label>' +
-        '<div class="select-wrap"><select id="college-select">' + collegeOptionsHtml + '</select>' +
-        '<svg class="select-caret" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"></polyline></svg></div>' +
+        '<div class="college-picker"><label class="college-label" for="college-search">Campus</label>' +
+        '<div class="combo-wrap' + (collegeUi.open ? ' is-open' : '') + '">' +
+        '<input type="text" id="college-search" class="combo-input" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="' + (collegeUi.open ? "true" : "false") + '" aria-controls="college-listbox" placeholder="Search campus…" value="' + esc(collegeUi.open ? collegeUi.query : currentCollege) + '">' +
+        '<svg class="select-caret" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"></polyline></svg>' +
+        (collegeUi.open ? '<div class="combo-listbox" id="college-listbox" role="listbox">' + listboxHtml + '</div>' : '') +
+        '</div>' +
         '</div></div>' +
         '<div class="hero-ring-wrap">' + ringSvg(pct, 78) + '<span class="hero-ring-label mono">' + overall.checked + '/' + overall.total + '</span></div>' +
       '</div></div>' +
@@ -458,11 +483,30 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
   var confirmState = {};
   var dbRef = null;
   var mode = "local"; // "local" or "shared"
+  var collegeUi = { open: false, query: "", activeIndex: 0 };
 
   var app = document.getElementById("app");
 
   function paint(){
-    app.innerHTML = renderApp(STATE, currentCollege, activeTab, mode, confirmState);
+    var active = document.activeElement;
+    var focusId = active && active.id ? active.id : null;
+    // Don't re-focus the search box while it's logically closed — doing so would
+    // dispatch a fresh focus event and immediately reopen the dropdown via focusin.
+    if (focusId === "college-search" && !collegeUi.open) focusId = null;
+    var selStart = focusId && active.selectionStart != null ? active.selectionStart : null;
+    var selEnd = focusId && active.selectionEnd != null ? active.selectionEnd : null;
+
+    app.innerHTML = renderApp(STATE, currentCollege, activeTab, mode, confirmState, collegeUi);
+
+    if (focusId) {
+      var el = document.getElementById(focusId);
+      if (el) {
+        el.focus();
+        if (selStart != null && el.setSelectionRange) {
+          try { el.setSelectionRange(selStart, selEnd); } catch (e) {}
+        }
+      }
+    }
   }
 
   function loadLocal(){
@@ -508,14 +552,6 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
   init();
 
   app.addEventListener("change", function(e){
-    var sel = e.target.closest("#college-select");
-    if (sel) {
-      currentCollege = sel.value;
-      try { localStorage.setItem("cvc-college", currentCollege); } catch (e) {}
-      confirmState = {};
-      paint();
-      return;
-    }
     var cb = e.target.closest("input[type=checkbox][data-item]");
     if (!cb) return;
     var id = cb.getAttribute("data-item");
@@ -530,7 +566,66 @@ h1,h2,h3{font-family:'Barlow Condensed', system-ui, sans-serif; font-weight:700;
     }
   });
 
+  function selectCollege(name){
+    currentCollege = name;
+    try { localStorage.setItem("cvc-college", currentCollege); } catch (e) {}
+    collegeUi = { open: false, query: "", activeIndex: 0 };
+    confirmState = {};
+    paint();
+  }
+
+  function filteredColleges(){
+    var q = collegeUi.query.toLowerCase();
+    return COLLEGES.filter(function(name){ return name.toLowerCase().indexOf(q) !== -1; });
+  }
+
+  app.addEventListener("focusin", function(e){
+    if (e.target.id === "college-search" && !collegeUi.open) {
+      collegeUi = { open: true, query: "", activeIndex: 0 };
+      paint();
+    }
+  });
+
+  app.addEventListener("focusout", function(e){
+    if (e.target.id === "college-search" && collegeUi.open) {
+      collegeUi = { open: false, query: "", activeIndex: 0 };
+      paint();
+    }
+  });
+
+  app.addEventListener("input", function(e){
+    if (e.target.id !== "college-search") return;
+    collegeUi = { open: true, query: e.target.value, activeIndex: 0 };
+    paint();
+  });
+
+  app.addEventListener("keydown", function(e){
+    if (e.target.id !== "college-search") return;
+    var list = filteredColleges();
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      collegeUi.activeIndex = Math.min(collegeUi.activeIndex + 1, Math.max(list.length - 1, 0));
+      paint();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      collegeUi.activeIndex = Math.max(collegeUi.activeIndex - 1, 0);
+      paint();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (list.length) selectCollege(list[Math.min(collegeUi.activeIndex, list.length - 1)]);
+    } else if (e.key === "Escape") {
+      e.target.blur();
+    }
+  });
+
+  app.addEventListener("mousedown", function(e){
+    if (e.target.closest(".combo-option")) e.preventDefault();
+  });
+
   app.addEventListener("click", function(e){
+    var option = e.target.closest(".combo-option");
+    if (option) { selectCollege(option.getAttribute("data-college")); return; }
+
     var tabBtn = e.target.closest("[data-tab]");
     if (tabBtn) { activeTab = tabBtn.getAttribute("data-tab"); confirmState = {}; paint(); return; }
 
